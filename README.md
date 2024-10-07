@@ -119,7 +119,7 @@ void adiciona(celula *lista, char* comando, int cont)
     int i=4;
     if(comando[i+1] != ' ')
     {
-        p->prior = comando[i] + comando[i+1] - 96;
+        p->prior = (comando[i]- 48)*10 + comando[i+1] - 48;
         i = i+3;
     }
     else
@@ -127,7 +127,7 @@ void adiciona(celula *lista, char* comando, int cont)
         p->prior = comando[i] - 48;
         i = i+2;
     }
-    printf("%d\n", p->prior);
+    //printf("%d\n", p->prior);
     for(int j=0;j<8;j = j + 3)
     {
         if(j == 0)
@@ -153,7 +153,7 @@ void adiciona(celula *lista, char* comando, int cont)
         p->descricao[k] = comando[i+k];
         k++;
     }
-    printf("%s\n", p->descricao);
+    //printf("%s\n", p->descricao);
     lista[cont] = *p;
 }
 
@@ -178,6 +178,11 @@ int main()
         }
     }
     while(strcmp(comando, "quit") != 0);
+    mergesort(lista_p, 0, 1);
+    for(int i=0;i<2;i++)
+    {
+        printf("%d\n", lista_p[i].prior);
+    }
     return 0;
 }
 ```
