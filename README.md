@@ -78,7 +78,7 @@ void add_ord_prior(celula* lista, int cont, celula aux)
     }
 }
 
-void add_ord_prior(celula* lista, int cont, celula aux)
+void add_ord_tempo(celula* lista, int cont, celula aux)
 {
     int posicao;
     int acabou = 0;
