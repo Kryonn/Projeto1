@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #define MAX_DESCR 50
 
 typedef struct horas
@@ -16,6 +16,41 @@ typedef struct process
     horario chegada;
     char descricao[MAX_DESCR];
 }celula;
+
+
+int identifica(char* comando)
+{
+    // add - 0, exec - 1, next - 2, change - 3, print - 4
+    char str[6] = {0};
+    int i = 0;
+    while (i < 6 && comando[i] != ' ' && comando[i] != '\0')
+    {
+        str[i] = comando[i];
+        i++;
+    }
+    str[i] = '\0';
+    if (strcmp(str, "add") == 0)
+    {
+        return 0;
+    }
+    if (strcmp(str, "exec") == 0)
+    {
+        return 1;
+    }
+    if (strcmp(str, "next") == 0)
+    {
+        return 2;
+    }
+    if (strcmp(str, "change") == 0)
+    {
+        return 3;
+    }
+    if (strcmp(str, "print") == 0)
+    {
+        return 4;
+    }
+    return -1;
+}
 
 int hcmp(horario h1, horario h2)
 {
@@ -38,7 +73,7 @@ int hcmp(horario h1, horario h2)
             }
             else
             {
-                if(h1.mm < h2.mm)
+                if(h1.mm > h2.mm)
                 {
                     return 0;
                 }
@@ -56,193 +91,81 @@ int hcmp(horario h1, horario h2)
             }
         }
     }
+    return -1;
 }
 
-void intercala_p(celula* lista, int ini, int meio, int fim)
+void add_ord_prior(celula* lista, int cont, celula aux)
 {
-    int k=0,j=0;
-    int n1 = meio-ini+1;
-    int n2 = fim-meio;
-    celula lvet[n1+1];
-    celula rvet[n2+1];
-    for(int i=0;i<n1;i++)
+    int posicao;
+    int acabou = 0;
+    if(cont == 0)
     {
-        lvet[i] = lista[ini+i];
-    }
-    for(int i=0;i<n2;i++)
-    {
-        rvet[i] = lista[meio+1+i];
-    }
-    lvet[n1].prior = -999999;
-    rvet[n2].prior = -999999;
-    for(int i=ini;i<=fim;i++)
-    {
-        if(lvet[j].prior > rvet[k].prior)
-        {
-            lista[i] = lvet[j];
-            j++;
-        }
-        else
-        {
-            lista[i] = rvet[k];
-            k++;
-        }
-    }
-}
-
-void intercala_t(celula* lista, int ini, int meio, int fim)
-{
-    int k=0,j=0;
-    int n1 = meio-ini+1;
-    int n2 = fim-meio;
-    celula lvet[n1+1];
-    celula rvet[n2+1];
-    for(int i=0;i<n1;i++)
-    {
-        lvet[i] = lista[ini+i];
-    }
-    for(int i=0;i<n2;i++)
-    {
-        rvet[i] = lista[meio+1+i];
-    }
-    lvet[n1].chegada.hh = 999999;
-    rvet[n2].chegada.hh = 999999;
-    for(int i=ini;i<=fim;i++)
-    {
-        if(hcmp(lvet[j].chegada, rvet[k].chegada))
-        {
-            lista[i] = lvet[j];
-            j++;
-        }
-        else
-        {
-            lista[i] = rvet[k];
-            k++;
-        }
-    }
-}
-
-void mergesort(celula* lista, int ini, int fim, char c)
-{
-    int meio;
-    if(ini < fim)
-    {
-        meio = (fim+ini)/2;
-        mergesort(lista, ini, meio, c);
-        mergesort(lista, meio+1, fim, c);
-        if(c == 'p')
-        {
-            intercala_p(lista, ini, meio, fim);
-        }
-        else
-        {
-            intercala_t(lista, ini, meio, fim);
-        }
-        
-    }
-}
-
-int identifica(char* comando)
-{
-    //add - 0, exec - 1, next - 2, change - 3, print - 4
-    char* str;
-    int cont=0, flag=0;
-    str = (char*) malloc(6*sizeof(char));
-    for(int i=0;i<6 && flag==0;i++)
-    {
-        if(comando[i] != ' ')
-        {
-            str[i] = comando[i];
-            cont++;
-        }
-        else
-        {
-            flag = 1;
-        }
-    }
-    str = realloc(str, cont);
-    if(strcmp(str, "add") == 0)
-    {
-        free(str);
-        return 0;
-    }
-    if(strcmp(str, "next") == 0)
-    {
-        free(str);
-        return 2;
-    }
-    if(strcmp(str, "exec") == 0)
-    {
-        free(str);
-        return 1;
-    }
-    if(strcmp(str, "change") == 0)
-    {
-        free(str);
-        return 3;
-    }
-    if(strcmp(str, "print") == 0)
-    {
-        free(str);
-        return 4;
-    }
-}
-
-void insere_p(celula* lista, celula processo, int tam)
-{
-    int posicao, achou=0;
-    for(int i=0;i<tam-1 && achou == 0;i++)
-    {
-        if(processo.prior > lista[i].prior)
-        {
-            posicao = i;
-            achou=1;
-        }
-    }
-    if(achou == 0)
-    {
-        lista[tam-1] = processo;
+        lista[0] = aux;
     }
     else
     {
-        for(int i=tam-1;i>posicao;i--)
+        for(int i=0;i<cont && acabou==0;i++)
         {
-            lista[i] = lista[i-1];
+            if(lista[i].prior < aux.prior)
+            {
+                posicao = i;
+                for(int j=cont;j>i;j--)
+                {
+                    lista[j] = lista[j-1];
+                }
+                acabou = 1;
+            }
         }
-        lista[posicao] = processo;
+        if(acabou == 1)
+        {
+            lista[posicao] = aux;
+        }
+        else
+        {
+            lista[cont] = aux;
+        }
     }
 }
 
-void insere_t(celula* lista, celula processo, int tam)
+void add_ord_tempo(celula* lista, int cont, celula aux)
 {
-    int posicao, achou=0;
-    for(int i=0;i<tam-1 && achou == 0;i++)
+    int posicao;
+    int acabou = 0;
+    if(cont == 0)
     {
-        if(hcmp(lista[i].chegada, processo.chegada))
-        {
-            posicao = i;
-            achou=1;
-        }
-    }
-    if(achou == 0)
-    {
-        lista[tam-1] = processo;
+        lista[0] = aux;
     }
     else
     {
-        for(int i=tam-1;i>posicao;i--)
+        for(int i=0;i<cont && acabou==0;i++)
         {
-            lista[i] = lista[i-1];
+            if(hcmp(aux.chegada, lista[i].chegada))
+            {
+                posicao = i;
+                for(int j=cont;j>i;j--)
+                {
+                    lista[j] = lista[j-1];
+                }
+                acabou = 1;
+            }
         }
-        lista[posicao] = processo;
+        if(acabou == 1)
+        {
+            lista[posicao] = aux;
+        }
+        else
+        {
+            lista[cont] = aux;
+        }
     }
 }
 
-void adiciona(celula *lista_p, celula *lista_t, char* comando, int cont)
+void adiciona(celula* lista_p, celula* lista_t, char *comando, int cont)
 {
+    celula aux;
+    int posicao;
     int k=0;
     int i=4;
-    celula aux;
     if(comando[i+1] != ' ')
     {
         aux.prior = (comando[i]- 48)*10 + comando[i+1] - 48;
@@ -253,7 +176,6 @@ void adiciona(celula *lista_p, celula *lista_t, char* comando, int cont)
         aux.prior = comando[i] - 48;
         i = i+2;
     }
-    //printf("%d\n", p->prior);
     for(int j=0;j<8;j = j + 3)
     {
         if(j == 0)
@@ -278,9 +200,158 @@ void adiciona(celula *lista_p, celula *lista_t, char* comando, int cont)
     {
         aux.descricao[k] = comando[i+k];
         k++;
+        posicao = k;
     }
-    insere_p(lista_p, aux, cont);
-    insere_t(lista_t, aux, cont);
+    aux.descricao[k] = '\0';
+    add_ord_prior(lista_p, cont, aux);
+    add_ord_tempo(lista_t, cont, aux);
+}
+
+int busca_binaria_p(celula* lista, int cont, int prior) {
+    int inicio = 0;
+    int fim = cont - 1;
+    
+    while (inicio <= fim) 
+    {
+        int meio = inicio + (fim - inicio) / 2;
+        // Verifica se o elemento está no meio
+        if (lista[meio].prior == prior) {
+            return meio; // Elemento encontrado, retorna o índice
+        }
+        // Se o elemento for maior, ignora a metade esquerda
+        else if (lista[meio].prior > prior) {
+            inicio = meio + 1;
+        }
+        // Se o elemento for menor, ignora a metade direita
+        else {
+            fim = meio - 1;
+        }
+    }
+}
+
+int busca_binaria_t(celula* lista, int cont, horario t) {
+    int inicio = 0;
+    int fim = cont - 1;
+    
+    while (inicio <= fim) 
+    {
+        int meio = inicio + (fim - inicio) / 2;
+        // Verifica se o elemento está no meio
+        if (hcmp(lista[meio].chegada, t) == -1) {
+            return meio; // Elemento encontrado, retorna o índice
+        }
+        // Se o elemento for maior, ignora a metade esquerda
+        else if (hcmp(lista[meio].chegada, t)) {
+            inicio = meio + 1;
+        }
+        // Se o elemento for menor, ignora a metade direita
+        else {
+            fim = meio - 1;
+        }
+    }
+}
+
+
+void exec_p(celula* lista_p, celula* lista_t, int* cont)
+{
+    horario t;
+    int posicao;
+    t = lista_p[0].chegada;
+    for(int i=0;i<(*cont)-1;i++)
+    {
+        lista_p[i] = lista_p[i+1];
+    }
+    posicao = busca_binaria_t(lista_t, *cont, t);
+    for(int i=posicao;i<(*cont)-1;i++)
+    {
+        lista_t[i] = lista_t[i+1];
+    }
+    (*cont)--;
+}
+
+void exec_t(celula* lista_p, celula* lista_t, int* cont)
+{
+    int prior;
+    int posicao;
+    prior = lista_t[0].prior;
+    for(int i=0;i<(*cont)-1;i++)
+    {
+        lista_t[i] = lista_t[i+1];
+    }
+    posicao = busca_binaria_p(lista_p, *cont, prior);
+    for(int i=posicao;i<(*cont)-1;i++)
+    {
+        lista_p[i] = lista_p[i+1];
+    }
+    (*cont)--;
+}
+
+void next_p(celula* lista_p)
+{
+    printf("%02d %02d:%02d:%02d %s\n",lista_p[0].prior, lista_p[0].chegada.hh,
+                                    lista_p[0].chegada.mm, lista_p[0].chegada.ss, 
+                                    lista_p[0].descricao);
+    printf("\n");
+}
+
+void next_t(celula* lista_t)
+{
+    printf("%02d %02d:%02d:%02d %s\n",lista_t[0].prior, lista_t[0].chegada.hh,
+                                    lista_t[0].chegada.mm, lista_t[0].chegada.ss, 
+                                    lista_t[0].descricao);
+    printf("\n");
+}
+
+void troca_p(celula* lista_p, celula* lista_t, char* comando, int cont)
+{
+    int prior1, prior2, n, m;
+    horario aux;
+    if(comando[11] < 48 || comando[11] > 57)
+    {
+        prior1 = comando[10] - 48;
+        if(comando[13] < 48 || comando[13] > 57)
+        {
+            prior2 = comando[12] - 48;
+        }
+        else
+        {
+            prior2 = (comando[12] - 48)*10 + comando[13] - 48;
+        }
+    }
+    else
+    {
+        prior1 = (comando[10] - 48)*10 + comando[11] - 48;
+        if(comando[14] < 48 || comando[14] > 57)
+        {
+            prior2 = comando[13] - 48;
+        }
+        else
+        {
+            prior2 = (comando[13] - 48)*10 + comando[14] - 48;
+        }
+    }
+    n = busca_binaria_p(lista_p, cont, prior1);
+    aux = lista_p[n].chegada;
+    m = busca_binaria_t(lista_t, cont, aux);
+    lista_p[n].prior = prior2;
+    lista_t[m].prior = prior2;
+}
+
+void troca_t(celula* lista_t, celula* lista_p, char* comando, int cont)
+{
+    int n, m, aux;
+    horario aux1, aux2;
+    aux1.hh = (comando[10]-48)*10+comando[11]-48;
+    aux1.mm = (comando[13]-48)*10+comando[14]-48;
+    aux1.ss = (comando[16]-48)*10+comando[17]-48;
+    aux2.hh = (comando[19]-48)*10+comando[20]-48;
+    aux2.mm = (comando[22]-48)*10+comando[23]-48;
+    aux2.ss = (comando[25]-48)*10+comando[26]-48;
+    n = busca_binaria_t(lista_t, cont, aux1);
+    aux = lista_t[n].prior;
+    m = busca_binaria_p(lista_p, cont, aux);
+    lista_t[n].chegada = aux2;
+    lista_p[m].chegada = aux2;
 }
 
 void printa_lista(celula *lista, int tam)
@@ -294,61 +365,15 @@ void printa_lista(celula *lista, int tam)
     printf("\n");
 }
 
-void troca_p(celula* lista, int prior, int prior_, int tam)
-{
-    int achou = 0;
-    for(int i=0;i<tam && achou == 0;i++)
-    {
-        if(lista[i].prior == prior)
-        {
-            lista[i].prior = prior_;
-            achou = 1;
-        }
-    }
-}
-
-void troca_t(celula* lista, int h, int m, int s, int h_, int m_, int s_, int tam)
-{
-    int achou = 0;
-    for(int i=0;i<tam && achou == 0;i++)
-    {
-        if(lista[i].chegada.hh == h && lista[i].chegada.mm == m && lista[i].chegada.ss == s)
-        {
-            lista[i].chegada.hh = h_;
-            lista[i].chegada.mm = m_;
-            lista[i].chegada.ss = s_;
-            achou = 1;
-        }
-    }
-}
-
-void retira(celula* lista, celula processo, int tam)
-{
-    int achou=0;
-    for(int i=0;i<tam && achou==0;i++)
-    {
-        if(processo.prior == lista[i].prior)
-        {
-            for(int j=i+1;j<tam;j++)
-            {
-                lista[i-1] = lista[i];
-            }
-            achou = 1;
-        }
-    }
-}
-
 
 int main()
 {
-    horario aux1, aux2;
-    celula aux;
-    int prior1, prior2;
+    celula* lista_p;
+    celula* lista_t;
+    int n, cont=0;
     char comando[67];
-    celula *lista_p, *lista_t;
-    int n, cont=0, cont1=0;
-    lista_p = (celula*) malloc(sizeof(celula));
-    lista_t = (celula*) malloc(sizeof(celula));
+    lista_p = (celula *) malloc(100*sizeof(celula));
+    lista_t = (celula *) malloc(100*sizeof(celula));
     do
     {
         scanf(" %[^\n]", comando);
@@ -356,97 +381,37 @@ int main()
         switch(n)
         {
             case 0:
-                if(cont == 0)
-                {
-                    adiciona(lista_p, lista_t, comando, cont);
-                    cont++;
-                }
-                else
-                {
-                    lista_p = realloc(lista_p, (cont + 1)*sizeof(celula));
-                    lista_t = realloc(lista_t, (cont + 1)*sizeof(celula));
-                    adiciona(lista_p, lista_t, comando, cont);
-                    cont++;
-                }
+                adiciona(lista_p, lista_t, comando, cont);
+                cont++;
                 break;
             case 1:
                 if(comando[6] == 'p')
                 {
-                    for(int k=1;k<cont;k++)
-                    {
-                        lista_p[k-1] = lista_p[k];
-                    }
-                    aux = lista_p[cont-1];
-                    retira(lista_t, aux, cont);
-                    lista_t = realloc(lista_t, (cont-1)*sizeof(celula));
-                    cont--;
+                    exec_p(lista_p, lista_t, &cont);
                 }
                 else
                 {
-                    for(int k=1;k<cont;k++)
-                    {
-                        lista_t[k-1] = lista_t[k];
-                    }
-                    aux = lista_t[cont-1];
-                    retira(lista_p, aux, cont);
-                    lista_p = realloc(lista_p, (cont-1)*sizeof(celula));
-                    cont--;
+                    exec_t(lista_p, lista_t, &cont);
                 }
                 break;
             case 2:
                 if(comando[6] == 'p')
                 {
-                    printf("%02d %02d:%02d:%02d %s\n",lista_p[0].prior, lista_p[0].chegada.hh,
-                                    lista_p[0].chegada.mm, lista_p[0].chegada.ss, 
-                                    lista_p[0].descricao);
-                    printf("\n");
+                    next_p(lista_p);
                 }
                 else
                 {
-                    printf("%02d %02d:%02d:%02d %s\n",lista_t[0].prior, lista_t[0].chegada.hh,
-                                    lista_t[0].chegada.mm, lista_t[0].chegada.ss, 
-                                    lista_t[0].descricao);
-                    printf("\n");
+                    next_t(lista_t);
                 }
                 break;
             case 3:
                 if(comando[8] == 'p')
                 {
-                    if(comando[11] < 48 || comando[11] > 57)
-                    {
-                        prior1 = comando[10] - 48;
-                        if(comando[13] < 48 || comando[13] > 57)
-                        {
-                            prior2 = comando[12] - 48;
-                        }
-                        else
-                        {
-                            prior2 = (comando[12] - 48)*10 + comando[13] - 48;
-                        }
-                    }
-                    else
-                    {
-                        prior1 = (comando[10] - 48)*10 + comando[11] - 48;
-                        if(comando[14] < 48 || comando[14] > 57)
-                        {
-                            prior2 = comando[13] - 48;
-                        }
-                        else
-                        {
-                            prior2 = (comando[13] - 48)*10 + comando[14] - 48;
-                        }
-                    }
-                    troca_p(lista_p, prior1, prior2, cont);
+                    troca_p(lista_p, lista_t, comando, cont);
                 }
                 else
                 {
-                    aux1.hh = (comando[10]-48)*10+comando[11]-48;
-                    aux1.mm = (comando[13]-48)*10+comando[14]-48;
-                    aux1.ss = (comando[16]-48)*10+comando[17]-48;
-                    aux2.hh = (comando[19]-48)*10+comando[20]-48;
-                    aux2.mm = (comando[22]-48)*10+comando[23]-48;
-                    aux2.ss = (comando[25]-48)*10+comando[26]-48;
-                    troca_t(lista_p, aux1.hh, aux1.mm, aux1.ss, aux2.hh, aux2.mm, aux2.ss, cont);
+                    troca_t(lista_t, lista_p, comando, cont);
                 }
                 break;
             case 4:
@@ -462,7 +427,5 @@ int main()
         }
     }
     while(strcmp(comando, "quit") != 0);
-    free(lista_p);
-    free(lista_t);
     return 0;
 }
