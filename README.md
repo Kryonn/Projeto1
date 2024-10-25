@@ -2,6 +2,43 @@
 
 ## ICC2
 
+Identifica:
+```c
+int identifica(char* comando)
+{
+    // add - 0, exec - 1, next - 2, change - 3, print - 4
+    char str[6] = {0}; // Inicializa `str` com todos os caracteres como `\0`
+
+    // Copia os primeiros 5 caracteres não-espaciais de `comando` para `str`
+    int i = 0;
+    while (i < 5 && comando[i] != ' ' && comando[i] != '\0') {
+        str[i] = comando[i];
+        i++;
+    }
+    str[i] = '\0'; // Garante o término da string com `\0`
+
+    // Comparação sem espaços extras
+    if (strcmp(str, "add") == 0) {
+        return 0;
+    }
+    if (strcmp(str, "exec") == 0) {
+        return 1;
+    }
+    if (strcmp(str, "next") == 0) {
+        return 2;
+    }
+    if (strcmp(str, "change") == 0) {
+        return 3;
+    }
+    if (strcmp(str, "print") == 0) {
+        return 4;
+    }
+
+    // Caso comando não identificado
+    return -1;
+}
+```
+
 ```c
 #include <stdio.h>
 #include <string.h>
