@@ -2,6 +2,160 @@
 
 ## ICC2
 
+Adiciona:
+```c
+int hcmp(horario h1, horario h2)
+{
+    //Se h1<h2, return 1, se h2<h1 return 0
+    if(h1.hh < h2.hh)
+    {
+        return 1;
+    }
+    else
+    {
+        if(h1.hh > h2.hh)
+        {
+            return 0;
+        }
+        else
+        {
+            if(h1.mm < h2.mm)
+            {
+                return 1;
+            }
+            else
+            {
+                if(h1.mm < h2.mm)
+                {
+                    return 0;
+                }
+                else
+                {
+                    if(h1.ss < h2.ss)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void add_ord_prior(celula* lista, int cont, celula aux)
+{
+    int posicao;
+    int acabou = 0;
+    if(cont == 0)
+    {
+        lista[0] = aux;
+    }
+    else
+    {
+        for(int i=0;i<cont && acabou==0;i++)
+        {
+            if(lista[i].prior < aux)
+            {
+                posicao = i;
+                for(int j=cont;j>i;j--)
+                {
+                    lista[j] = lista[j-1];
+                }
+                acabou = 1;
+            }
+        }
+        if(acabou == 1)
+        {
+            lista[posicao] = aux;
+        }
+        else
+        {
+            lista[cont] = aux;
+        }
+    }
+}
+
+void add_ord_prior(celula* lista, int cont, celula aux)
+{
+    int posicao;
+    int acabou = 0;
+    if(cont == 0)
+    {
+        lista[0] = aux;
+    }
+    else
+    {
+        for(int i=0;i<cont && acabou==0;i++)
+        {
+            if(hcmp(aux.chegada, lista->chegada))
+            {
+                posicao = i;
+                for(int j=cont;j>i;j--)
+                {
+                    lista[j] = lista[j-1];
+                }
+                acabou = 1;
+            }
+        }
+        if(acabou == 1)
+        {
+            lista[posicao] = aux;
+        }
+        else
+        {
+            lista[cont] = aux;
+        }
+    }
+}
+
+void adiciona_p(celula* lista_p, celula* lista_t, char *comando, int cont)
+{
+    celula aux;
+    int k=0;
+    int i=4;
+    if(comando[i+1] != ' ')
+    {
+        aux.prior = (comando[i]- 48)*10 + comando[i+1] - 48;
+        i = i+3;
+    }
+    else
+    {
+        aux.prior = comando[i] - 48;
+        i = i+2;
+    }
+    for(int j=0;j<8;j = j + 3)
+    {
+        if(j == 0)
+        {
+            aux.chegada.hh = (comando[i+j]-48)*10 + comando[i+j+1] - 48;
+        }
+        else
+        {
+            if(j == 3)
+            {
+                aux.chegada.mm = (comando[i+j]-48)*10 + comando[i+j+1] - 48;
+            }
+            else
+            {
+                aux.chegada.ss = (comando[i+j]-48)*10 + comando[i+j+1] - 48;
+            }
+        }
+        
+    }
+    i = i + 9;
+    while(comando[i+k] != '\0')
+    {
+        aux.descricao[k] = comando[i+k];
+        k++;
+    }
+    add_ord_prior(lista_p, cont, aux);
+    add_ord_tempo(lista_t, cont, aux);
+}
+```
+
 Identifica:
 ```c
 int identifica(char* comando)
